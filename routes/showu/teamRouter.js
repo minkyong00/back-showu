@@ -4,7 +4,7 @@ import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { getTeamDetail, getTeamList, teamCreate, teamPortfiloDownLoad, addTeamLike, getTeamLike, teamModify, getTeamDatas } from '../../controller/showu/teamController.js';
+import { getTeamDetail, getTeamList, teamCreate, teamPortfiloDownLoad, addTeamLike, getTeamLike, teamModify, getTeamDatas, removeTeam } from '../../controller/showu/teamController.js';
 import applyRouter from './applyRouter.js';
 
 
@@ -90,5 +90,8 @@ teamRouter.post("/add-like/:teamId", passport.authenticate('jwt', { session : fa
 
 // 팀 매칭 조회 '/showu/team/like/:teamId'
 teamRouter.get("/like/:teamId", passport.authenticate('jwt', { session : false }), getTeamLike)
+
+// 팀 매칭 삭제 '/showu/team/remove/:teamId'
+teamRouter.delete("/remove/:teamId", passport.authenticate('jwt', { session : false }), removeTeam)
 
 export default teamRouter;

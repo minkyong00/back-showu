@@ -317,5 +317,27 @@ const getTeamDatas = async (req, res) => {
     }
 }
 
+// 팀 매칭 삭제
+const removeTeam = async (req, res) => {
+    const { teamId } = req.params;
+    console.log("teamId", teamId)
+    const userId = req.user._id; 
+    console.log("userId", userId)
 
-export { getTeamList, getTeamDetail, teamCreate, teamPortfiloDownLoad, addTeamLike, getTeamLike, teamModify, getTeamDatas }
+    try {
+        const team = await TeamMatching.findOne({ _id: teamId, teamLeader: userId });
+        console.log("team", team)
+        if (!team) {
+        return res.status(404).json({ success: false, message: "팀 매칭을 찾을 수 없거나 삭제 권한이 없습니다." });
+        }
+
+        await TeamMatching.deleteOne({ _id: teamId });
+        return res.status(200).json({ success: true, message: "팀 매칭이 성공적으로 삭제되었습니다." });
+    } catch (error) {
+        console.error("팀 매칭 삭제 중 오류:", error);
+        return res.status(500).json({ success: false, message: "서버 오류로 인해 삭제에 실패했습니다." });
+    }
+}
+
+
+export { getTeamList, getTeamDetail, teamCreate, teamPortfiloDownLoad, addTeamLike, getTeamLike, teamModify, getTeamDatas, removeTeam }
