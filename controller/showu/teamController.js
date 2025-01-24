@@ -258,15 +258,15 @@ const teamModify = async (req, res) => {
     }
 
     const modifyTeam = await TeamMatching.updateOne(
-        { teamLeader : userId },
+        { teamLeader : userId, _id : id },
         {
             teamLeader : userId,
             teamName : teamName,
             category : category,
             teamTitle : teamTitle,
             teamIntro : teamIntro,
-            file : filePaths.file || null,
-            teamProfile : filePaths.teamProfile || null,
+            file : filePaths.file || foundUser.file,
+            teamProfile : filePaths.teamProfile || foundUser.teamProfile,
             activityPeriodStart : activityPeriodStart,
             deadLine : deadLine,
             careerHistory : careerHistory,
