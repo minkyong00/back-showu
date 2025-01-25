@@ -52,4 +52,25 @@ const applyCreate = async (req, res) => {
   })
 }
 
-export { applyCreate }
+const removeApply = async (req, res) => {
+  const { applyId } = req.params;
+  console.log("applyId", applyId)
+  const userId = req.user._id; 
+  console.log("userId", userId)
+
+    try {
+        const team = await TeamApply.findOne({ _id: applyId, applyId: userId });
+        console.log("team", team)
+        if (!team) {
+        return res.status(404).json({ success: false, message: "팀 지원 내역을 찾을 수 없거나 삭제 권한이 없습니다." });
+        }
+
+        await TeamMatching.deleteOne({ _id: applyId });
+        return res.status(200).json({ success: true, message: "팀 내역이 성공적으로 삭제되었습니다." });
+    } catch (error) {
+        console.error("팀 매칭 삭제 중 오류:", error);
+        return res.status(500).json({ success: false, message: "서버 오류로 인해 삭제에 실패했습니다." });
+    }
+}
+
+export { applyCreate, removeApply }

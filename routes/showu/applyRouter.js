@@ -4,7 +4,7 @@ import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { applyCreate } from '../../controller/showu/teamApplyController.js';
+import { applyCreate, removeApply } from '../../controller/showu/teamApplyController.js';
 
 // ES Modules에서 __dirname 설정
 const __filename = fileURLToPath(import.meta.url);
@@ -64,5 +64,8 @@ createUploadFolder(path.join(__dirname, "../../uploads/showu/apply"));
 
 // 팀 매칭 지원 'showu/team/apply/create/:id'
 applyRouter.post("/create/:id", passport.authenticate('jwt', { session : false }), TeamApplyFileUploadMiddleWare, applyCreate)
+
+// 팀 매칭 삭제 '/shouw/team/apply/remove/:applyId'
+applyRouter.delete("/remove/:applyId", passport.authenticate('jwt', { session : false }), removeApply)
 
 export default applyRouter;
