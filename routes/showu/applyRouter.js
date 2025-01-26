@@ -4,7 +4,7 @@ import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { applyCreate, removeApply, getTeamApply } from '../../controller/showu/teamApplyController.js';
+import { applyCreate, removeApply, getTeamApply, getDetailApply, modifyApply } from '../../controller/showu/teamApplyController.js';
 
 // ES Modules에서 __dirname 설정
 const __filename = fileURLToPath(import.meta.url);
@@ -55,20 +55,22 @@ const upload = multer({
 
 const applyRouter = express.Router();
 const TeamApplyFileUploadMiddleWare = upload.single('portfilo');
-// const TeamFileUploadMiddleWare = upload.fields([
-//   { name : "file", maxCount : 1 }, //포트폴리오
-//   { name : "teamProfile", maxCount : 1}, //팀 프로필 이미지
-// ]);
 
 createUploadFolder(path.join(__dirname, "../../uploads/showu/apply"));
 
 // 팀 매칭 지원 'showu/team/apply/create/:id'
 applyRouter.post("/create/:id", passport.authenticate('jwt', { session : false }), TeamApplyFileUploadMiddleWare, applyCreate)
 
-// 팀 매칭 삭제 '/shouw/team/apply/remove/:applyId'
+// 팀 지원 삭제 '/shouw/team/apply/remove/:applyId'
 applyRouter.delete("/remove/:applyId", passport.authenticate('jwt', { session : false }), removeApply)
 
 // 팀 지원한 목록 '/showu/team/apply/'
 applyRouter.get("/" , passport.authenticate('jwt', { session : false }), getTeamApply)
+
+// 팀 지원한 상세 정보 '/showu/team/apply/:id'
+applyRouter.get("/:id", passport.authenticate('jwt', { session : false }), getDetailApply)
+
+// 팀 지원 수정 '/showu/team/apply/modify/:id'
+applyRouter.put("/modify/:id", passport.authenticate('jwt', { session : false }), TeamApplyFileUploadMiddleWare, modifyApply)
 
 export default applyRouter;

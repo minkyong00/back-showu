@@ -97,4 +97,59 @@ const getTeamApply = async (req, res) => {
   }
 }
 
-export { applyCreate, removeApply, getTeamApply }
+const getDetailApply = async (req, res) => {
+  const userId = req.user._id;
+  const { id } = req.params;
+  try {
+    const detailApply = await TeamApply.find({ _id : id, applyId : userId }).lean();
+    console.log("detailApply", detailApply)
+
+    res.status(200).json({
+      detailApplySuccess : true,
+      message : "성공적으로 팀 지원 상세 정보를 가져왔습니다.",
+      detailApply : detailApply
+    })
+  } catch (error) {
+    
+  }
+}
+
+const modifyApply = async (req, res) => {
+  const userId = req.user._id;
+    console.log("userId", userId)
+    const { id } = req.params;
+    console.log("id", id)
+
+    const { intro } = req.body;
+    
+    const foundUser = await TeamApply.findOne({ applyId : userId, _id : id }).lean();
+    console.log("foundUser", foundUser)
+
+    const uploadFolder = "uploads/showu/apply";
+    const filePaths = {}; // 파일 경로 저장
+
+    if (req.files) {
+    if (req.files.file) {
+        const portfolioPath = path.join(uploadFolder, req.files.file[0].filename).replaceAll("\\", "/");
+        filePaths.file = `/${portfolioPath}`;
+    }
+    }
+
+    const modifyTeam = await TeamApply.updateOne(
+        { applyId : userId, _id : id },
+        {
+            intro : intro,
+            teamProfile : filePaths.teamProfilo || foundUser.teamProfilo,
+        }
+    )
+
+    console.log("modifyTeam", modifyTeam)
+
+    res.status(200).json({
+        modifyTeamSuccess : true,
+        message : "팀 수정이 완료되었습니다.",
+        modifyTeam : modifyTeam
+    })
+}
+
+export { applyCreate, removeApply, getTeamApply, getDetailApply, modifyApply }
