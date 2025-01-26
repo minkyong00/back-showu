@@ -1,66 +1,61 @@
 import Community from "../../models/community/communitySchema.js";
-import multer from "multer";
 import path from "path";
-import { fileURLToPath } from "url";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const commuCreatePost = async (req, res) => {
+  const userId = req.user._id;
+  const { title, content, category, imageUrl } = req.body;
+  // const foundUser = await Community.findOne({ UserId : userId }).lean();
 
-// Multer 설정
-const uploadFolder = path.join(__dirname, "../../../uploads/communityWrites");
-const upload = multer({
-  storage: multer.diskStorage({
-    destination: (req, file, cb) => {
-      cb(null, uploadFolder);
-    },
-    filename: (req, file, cb) => {
-      const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-      const originalName = Buffer.from(file.originalname, "latin1").toString("utf-8");
-      cb(null, `${uniqueSuffix}-${originalName}`);
-    },
-  }),
-  limits: { fileSize: 5 * 1024 * 1024 }, // 파일 크기 제한: 5MB
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
-    if (allowedTypes.includes(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new Error("이미지 파일만 업로드 가능합니다."));
-    }
-  },
-}).single("file");
+  const uploadFolder = "uploads/community/post";
+  console.log("req.files", req)
+  const relativePath = path.join(uploadFolder, req.file.filename).replaceAll("\\", "/")
 
+  const createCommunityPost = await Community.create({
+    UserId : userId,
+    title : title,
+    content : content,
+    category : category,
+    imageUrl : relativePath
+  })
+
+  return res.status(200).json({
+    createSuccess : true,
+    message : "커뮤니티 글 쓰기가 완료되었습니다.",
+    createCommunityPost : createCommunityPost,
+    filePath : `/${relativePath}`
+  })
+} 
 
 // 글 작성 핸들러
-const createCommunityPost = async (req, res) => {
-  if (!req.user) {
-    return res.status(401).json({ message: "사용자가 인증되지 않았습니다." });
-  }
+// const createCommunityPost = async (req, res) => {
+//   if (!req.user) {
+//     return res.status(401).json({ message: "사용자가 인증되지 않았습니다." });
+//   }
 
-  const { title, category, content } = req.body;
-  const imageUrl = req.file ? `/uploads/communityWrites/${req.file.filename}` : "";
+//   const { title, category, content } = req.body;
+//   const imageUrl = req.file ? `/uploads/communityWrites/${req.file.filename}` : "";
 
-  if (!title || !category || !content) {
-    return res.status(400).json({ message: "모든 필드를 입력해주세요." });
-  }
+//   if (!title || !category || !content) {
+//     return res.status(400).json({ message: "모든 필드를 입력해주세요." });
+//   }
 
-  try {
-    const newPost = new Community({
-      userId: req.user._id,
-      title,
-      category,
-      content,
-      imageUrl,
-      createdAt: new Date().toISOString(),
-    });
+//   try {
+//     const newPost = new Community({
+//       userId: req.user._id,
+//       title,
+//       category,
+//       content,
+//       imageUrl,
+//       createdAt: new Date().toISOString(),
+//     });
 
-    await newPost.save();
-    res.status(201).json({ message: "게시글이 작성되었습니다.", post: newPost });
-  } catch (error) {
-    console.error("게시글 작성 중 오류:", error);
-    res.status(500).json({ message: "서버 오류" });
-  }
-};
+//     await newPost.save();
+//     res.status(201).json({ message: "게시글이 작성되었습니다.", post: newPost });
+//   } catch (error) {
+//     console.error("게시글 작성 중 오류:", error);
+//     res.status(500).json({ message: "서버 오류" });
+//   }
+// };
 
 export const uploadFile = (req, res) => {
   if (!req.file) {
@@ -179,9 +174,9 @@ const deleteCommunityPost = async (req, res) => {
 };
 
 export {
-  createCommunityPost,
   getAllCommunityPosts,
   getCommunityPostById,
   updateCommunityPost,
   deleteCommunityPost,
+  commuCreatePost
 };
