@@ -73,4 +73,28 @@ const removeApply = async (req, res) => {
     }
 }
 
-export { applyCreate, removeApply }
+const getTeamApply = async (req, res) => {
+  const userId = req.user._id;
+  try {
+    const apply = await TeamApply.find({ applyId : userId })
+      .populate("teamId")
+      .populate("applyId")
+      .populate("upgradeId")
+      .lean()
+    console.log("apply", apply)
+
+    res.status(200).json({
+      applySuccess : true,
+      message : "성공적으로 지원한 팀 목록을 가져왔습니다.",
+      apply : apply
+    })
+  } catch (error) {
+    res.status(500).json({
+      applySuccess : false,
+      message : "지원한 팀 목록을 가져오는데 실패했습니다"
+    })
+    
+  }
+}
+
+export { applyCreate, removeApply, getTeamApply }

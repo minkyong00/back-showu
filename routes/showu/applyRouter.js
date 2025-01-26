@@ -4,7 +4,7 @@ import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { applyCreate, removeApply } from '../../controller/showu/teamApplyController.js';
+import { applyCreate, removeApply, getTeamApply } from '../../controller/showu/teamApplyController.js';
 
 // ES Modules에서 __dirname 설정
 const __filename = fileURLToPath(import.meta.url);
@@ -67,5 +67,8 @@ applyRouter.post("/create/:id", passport.authenticate('jwt', { session : false }
 
 // 팀 매칭 삭제 '/shouw/team/apply/remove/:applyId'
 applyRouter.delete("/remove/:applyId", passport.authenticate('jwt', { session : false }), removeApply)
+
+// 팀 지원한 목록 '/showu/team/apply/'
+applyRouter.get("/" , passport.authenticate('jwt', { session : false }), getTeamApply)
 
 export default applyRouter;
