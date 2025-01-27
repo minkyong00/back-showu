@@ -76,6 +76,27 @@ const getCommuPost = async (req, res) => {
   }
 }
 
+const removeCommuPost = async (req, res) => {
+  const { id } = req.params;
+  console.log("id", id)
+  const userId = req.user._id;
+
+  try {
+    const foundPost = await Community.find({ _id : id, UserId : userId }).lean();
+    console.log("foundPost", foundPost)
+
+    await Community.deleteOne({ _id : id, UserId : userId })
+
+    return res.status(200).json({
+      message : "성공적으로 글을 삭제했습니다"
+    })
+  } catch (error) {
+    return res.status(200).json({
+      message : "글 삭제하는데 실패했습니다"
+    }) 
+  }
+}
+
 // 글 작성 핸들러
 // const createCommunityPost = async (req, res) => {
 //   if (!req.user) {
@@ -230,5 +251,6 @@ export {
   deleteCommunityPost,
   commuCreatePost,
   commuUpdatePost,
-  getCommuPost
+  getCommuPost,
+  removeCommuPost
 };

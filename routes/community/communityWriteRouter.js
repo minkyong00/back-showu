@@ -12,7 +12,7 @@ import {
   deleteCommunityPost,
   uploadFile,
 } from "../../controller/community/writeController.js";
-import { commuCreatePost, commuUpdatePost, getCommuPost } from "../../controller/community/writeController.js";
+import { commuCreatePost, commuUpdatePost, getCommuPost, removeCommuPost } from "../../controller/community/writeController.js";
 
 // ES Modules에서 __dirname 설정
 const __filename = fileURLToPath(import.meta.url);
@@ -75,6 +75,9 @@ writeRouter.put("/update/:id", passport.authenticate("jwt", { session: false }),
 
 // 커뮤니티 글 데이터 조회 '/community/write/update/detail/:id'
 writeRouter.get("/update/detail/:id", passport.authenticate("jwt", { session: false }), getCommuPost)
+
+// 커뮤니티 글 삭제 '/community/write/remove/:id' 
+writeRouter.delete("/remove/:id", passport.authenticate("jwt", { session: false }), removeCommuPost)
 
 
 // 커뮤니티 글 목록 조회
