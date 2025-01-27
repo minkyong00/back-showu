@@ -12,7 +12,7 @@ import {
   deleteCommunityPost,
   uploadFile,
 } from "../../controller/community/writeController.js";
-import { commuCreatePost } from "../../controller/community/writeController.js";
+import { commuCreatePost, commuUpdatePost, getCommuPost } from "../../controller/community/writeController.js";
 
 // ES Modules에서 __dirname 설정
 const __filename = fileURLToPath(import.meta.url);
@@ -65,18 +65,17 @@ const writeRouter = express.Router();
 const communityFileUploadMiddleWare = upload.single('file');
 
 createUploadFolder(path.join(__dirname, "../../uploads/community/post"));
-
-
-// writeRouter.post(
-  //   "/create",
-  //   passport.authenticate("jwt", { session: false }),
-  //   upload.single("file"),
-  //   createCommunityPost
-  // );
   
   
-// 커뮤니티 글 작성 '/community/create'
+// 커뮤니티 글 작성 '/community/write/create'
 writeRouter.post("/create", passport.authenticate("jwt", { session: false }), communityFileUploadMiddleWare, commuCreatePost)
+
+// 커뮤니티 글 수정 '/community/write/update/:id'
+writeRouter.put("/update/:id", passport.authenticate("jwt", { session: false }), communityFileUploadMiddleWare, commuUpdatePost)
+
+// 커뮤니티 글 데이터 조회 '/community/write/update/detail/:id'
+writeRouter.get("/update/detail/:id", passport.authenticate("jwt", { session: false }), getCommuPost)
+
 
 // 커뮤니티 글 목록 조회
 writeRouter.get("/posts", getAllCommunityPosts);

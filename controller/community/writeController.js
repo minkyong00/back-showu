@@ -26,6 +26,56 @@ const commuCreatePost = async (req, res) => {
   })
 } 
 
+const commuUpdatePost = async (req, res) => {
+  const userId = req.user._id;
+  const { title, content, category, imageUrl } = req.body;
+  const { id } = req.params;
+  // const foundUser = await Community.findOne({ UserId : userId, _id : id }).lean();
+
+  const uploadFolder = "uploads/community/post";
+  console.log("req.files", req)
+  const relativePath = path.join(uploadFolder, req.file.filename).replaceAll("\\", "/")
+
+  const updateCommunityPost = await Community.updateOne(
+    { UserId : userId, _id : id },
+    {
+      UserId : userId,
+      title : title,
+      content : content,
+      category : category,
+      imageUrl : relativePath
+    }
+  )
+
+  return res.status(200).json({
+    createSuccess : true,
+    message : "커뮤니티 글 수정이 완료되었습니다.",
+    updateCommunityPost : updateCommunityPost,
+    filePath : `/${relativePath}`
+  })
+}
+
+const getCommuPost = async (req, res) => {
+  const { id } = req.params;
+  console.log("id", id)
+  const userId = req.user._id;
+  console.log("userId", userId)
+
+  try {
+    const foundPost = await Community.find({ _id : id, UserId : userId }).lean();
+    console.log("foundPost", foundPost)
+
+    return res.status(200).json({
+      message : "성공적으로 커뮤니티 글 목록을 가져왔습니다.",
+      commuPost : foundPost
+    })
+  } catch (error) {
+    return res.status(500).json({
+      message : "커뮤니티 글 목록을 가져오는데 실패했습니다.",
+    })
+  }
+}
+
 // 글 작성 핸들러
 // const createCommunityPost = async (req, res) => {
 //   if (!req.user) {
@@ -178,5 +228,7 @@ export {
   getCommunityPostById,
   updateCommunityPost,
   deleteCommunityPost,
-  commuCreatePost
+  commuCreatePost,
+  commuUpdatePost,
+  getCommuPost
 };
