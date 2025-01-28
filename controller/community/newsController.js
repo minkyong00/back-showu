@@ -1,5 +1,7 @@
 import NewsInfo from "../../models/community/newsInfoSchema.js";
 import News from "../../models/community/newsSchema.js";
+import path from "path";
+
 
 // 전체 뉴스 목록 가져오기 (NewsMain)
 const getAllNews = async (req, res) => {
@@ -42,4 +44,40 @@ const getNewsById = async (req, res) => {
   }
 };
 
-export { getAllNews, getNewsById };
+const createNews = async (req, res) => {
+  const userId = req.user._id;
+  const { title, name, email, content, imageUrl } = req.body;
+  // const foundUser = await Community.findOne({ UserId : userId }).lean();
+
+  const uploadFolder = "uploads/community/news";
+  console.log("req.files", req)
+  const relativePath = path.join(uploadFolder, req.file.filename).replaceAll("\\", "/")
+
+  const createNewsPost = await News.create({
+    UserId : userId,
+    title : title,
+    name : name,
+    email : email,
+    content : content,
+    imageUrl : relativePath
+  })
+  console.log("createNewsPost", createNewsPost)
+
+  const createNewsInfoPost = await NewsInfo.create({
+    postId : createNewsPost._id,
+    title : title,
+    content : content,
+    imageUrl : relativePath
+  })
+
+  console.log("createNewsInfoPost", createNewsInfoPost)
+
+  return res.status(200).json({
+    createSuccess : true,
+    message : "제보하기가 완료되었습니다.",
+    createNewsPost : createNewsPost,
+    filePath : `/${relativePath}`
+  })
+}
+
+export { getAllNews, getNewsById, createNews };
