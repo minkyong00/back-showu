@@ -27,8 +27,12 @@ const getNewsById = async (req, res) => {
   }
 
   try {
-    const news = await NewsInfo.findOne({ postId : id }).lean();
+    const news = await NewsInfo.findOne({ postId : id })
+      .populate("postId")
+      .lean();
+
     console.log("news", news)
+
     if (!news) {
       return res.status(404).json({ message: "해당 뉴스를 찾을 수 없습니다." });
     }
@@ -80,4 +84,48 @@ const createNews = async (req, res) => {
   })
 }
 
-export { getAllNews, getNewsById, createNews };
+const editNews = async (req, res) => {
+  const userId = req.user._id;
+  const { title, name, email, content, imageUrl } = req.body;
+  const { id } = req.params;
+  // const foundUser = await Community.findOne({ UserId : userId, _id : id }).lean();
+
+  const uploadFolder = "uploads/community/news";
+  console.log("req.files", req)
+  const relativePath = path.join(uploadFolder, req.file.filename).replaceAll("\\", "/")
+
+  const updateReportPost = await News.updateOne(
+    { UserId : userId, _id : id },
+    {
+      UserId : userId,
+      title : title,
+      name : name,
+      email : email,
+      content : content,
+      imageUrl : relativePath
+    }
+  )
+  console.log("updateReportPost", updateReportPost)
+
+  const updateNewsInfoPost = await NewsInfo.updateOne(
+    { postId : id },
+    {
+      postId : updateReportPost._id,
+      title : title,
+      content : content,
+      imageUrl : relativePath
+    }
+  )
+  console.log("updateNewsInfoPost", updateNewsInfoPost)
+
+  return res.status(200).json({
+    updateSuccess : true,
+    message : "제보하기 글 수정이 완료되었습니다.",
+    updateReportPost : updateReportPost,
+    updateNewsInfoPost : updateNewsInfoPost,
+    filePath : `/${relativePath}`
+  })
+}
+
+
+export { getAllNews, getNewsById, createNews, editNews };
