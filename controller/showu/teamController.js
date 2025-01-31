@@ -12,13 +12,16 @@ const getTeamList = async (req, res) => {
         console.log("foundUserName", foundUserName);
 
         // team에 유저 정보 추가
-        const enrichedTeams = foundTeam.map(team => {
-        const userName = foundUserName.find(user => user._id.toString() === team.teamLeader.toString());
-        // 사용자 정보를 lesson에 추가
-        return {
-            ...team,
-            userName: userName || null
-        };
+        const enrichedTeams = foundTeam
+            .filter(team => team.status === "매칭 완료")
+            .map(team => {
+                const userName = 
+                    foundUserName.find(user => user._id.toString() === team.teamLeader.toString());
+                // 사용자 정보를 team에 추가
+                return {
+                    ...team,
+                    userName: userName || null
+                };
         });
 
         console.log("enrichedTeams", enrichedTeams)
