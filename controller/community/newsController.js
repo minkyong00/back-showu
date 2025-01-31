@@ -28,8 +28,13 @@ const getNewsById = async (req, res) => {
 
   try {
     const news = await NewsInfo.findOne({ postId : id })
-      .populate("postId")
-      .lean();
+    .populate({
+      path: "postId", 
+      populate: {
+        path: "UserId", 
+        model: "User", 
+      },
+    });
 
     console.log("news", news)
 
@@ -127,5 +132,31 @@ const editNews = async (req, res) => {
   })
 }
 
+const removeNewsPost = async (req, res) => {
+  const { id } = req.params;
+  console.log("id", id) //newInfo _id값
+  const userId = req.user._id;
 
-export { getAllNews, getNewsById, createNews, editNews };
+  try {
+    const foundnewInfo = await NewsInfo.find({ _id : id }).lean();
+    const postId = foundnewInfo.map(item => item.postId);
+    const foundNew = await News.find({ _id : postId, UserId : userId }).lean();
+    console.log("foundnewInfo", foundnewInfo)
+    console.log("foundnewInfo.postId", )
+    console.log("foundNew", foundNew)
+
+    await News.deleteOne({ _id : postId, UserId : userId })
+    await NewsInfo.deleteOne({ _id : id })
+
+    return res.status(200).json({
+      message : "성공적으로 글을 삭제했습니다"
+    })
+  } catch (error) {
+    return res.status(200).json({
+      message : "글 삭제하는데 실패했습니다"
+    }) 
+  }
+}
+
+
+export { getAllNews, getNewsById, createNews, editNews, removeNewsPost };

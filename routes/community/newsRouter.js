@@ -4,7 +4,7 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
-import { createNews, getAllNews, getNewsById, editNews } from '../../controller/community/newsController.js';
+import { createNews, getAllNews, getNewsById, editNews, removeNewsPost } from '../../controller/community/newsController.js';
 
 // ES Modules에서 __dirname 설정
 const __filename = fileURLToPath(import.meta.url);
@@ -71,6 +71,9 @@ newsRouter.post("/create", passport.authenticate("jwt", { session: false }), new
 
 // 제보하기 수정 '/community/newsMain/edit/:id'
 newsRouter.put("/edit/:id", passport.authenticate("jwt", { session: false }), newsFileUploadMiddleWare, editNews)
+
+// 제보하기 삭제 '/community/newsMain/remove/:id'
+newsRouter.delete("/remove/:id", passport.authenticate("jwt", { session: false }), removeNewsPost)
 
 
 export default newsRouter;
