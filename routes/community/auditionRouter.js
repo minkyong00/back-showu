@@ -9,6 +9,6 @@ const auditionRouter = express.Router();
 auditionRouter.get("/", getAllAuditions);
 
 // 특정 오디션 정보
-// auditionRouter.get('/:id', getAuditionById);
+auditionRouter.get('/:id', getAuditionById);
 
 export default auditionRouter;

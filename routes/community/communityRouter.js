@@ -17,13 +17,13 @@ import {
 } from "../../controller/community/commentController.js";
 
 import { 
-  createCommunityPost, 
   getAllCommunityPosts, 
   uploadFile 
 } from "../../controller/community/writeController.js";
 
 import newsRouter from "../community/newsRouter.js";
 import auditionRouter from "./auditionRouter.js";
+import writeRouter from "./communityWriteRouter.js";
 
 const communityRouter = express.Router();
 
@@ -37,7 +37,7 @@ communityRouter.post("/:id/comments", passport.authenticate("jwt", { session: fa
 communityRouter.delete("/comments/:commentId", passport.authenticate("jwt", { session: false }), deleteComment);
 
 communityRouter.post("/:id/likes", passport.authenticate("jwt", { session: false }), toggleLike);
-communityRouter.post("/create", passport.authenticate("jwt", { session: false }), createCommunityPost);
+// communityRouter.post("/create", passport.authenticate("jwt", { session: false }), createCommunityPost);
 
 communityRouter.get("/all", getAllCommunityPosts);
 
@@ -67,6 +67,9 @@ communityRouter.use("/newsMain", newsRouter);
 
 // 오디션 라우터 연결
 communityRouter.use("/audition", auditionRouter);
+
+// 커뮤니티 글 작성 라우터 연결
+communityRouter.use("/write", writeRouter)
 
 
 // 커뮤니티 상세 정보 조회

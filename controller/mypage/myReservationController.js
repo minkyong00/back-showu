@@ -1,36 +1,23 @@
 import Reservation from "../../models/reservation/reservationSchema.js";
 import Seat from "../../models/reservation/seatSchema.js";
-import Show from "../../models/reservation/showSchema.js";
 import Space from "../../models/reservation/spaceSchema.js";
 
 const getTickets = async (req, res) => {
   const userId = req.user._id;
-  console.log("로그인한 사용자 id : ", userId)
+  // console.log("로그인한 사용자 id : ", userId)
 
   try {
-    const resesrvationList = await Reservation.find({ user : userId })
-    // console.log("로그인한 사용자의 예약 정보 리스트 : ", resesrvationList)
+    const seatList = await Seat.find({ userId : userId }).populate('showId').lean();
+    // console.log("로그인한 사용자의 좌석 정보 리스트 : ", seatList);
 
-    const ticketList = await resesrvationList.map((ticket) => ({
-      showId : ticket.showId
+    const resTicketList = await seatList.map((ticket) => ({
+      name : ticket.showId.name,
+      venue : ticket.showId.venue,
+      dates : ticket.showId.dates,
+      img : ticket.showId.img,
+      id : ticket.showId._id
     }))
-      .filter(item => item.showId !== null)
-    // console.log("예약 정보 중 티켓 정보 리스트 : ", ticketList)
-
-    const ticketId = await ticketList.map((item) => item.showId)
-    // console.log("ticketId만 가져오기 : ", ticketId)
-
-    const myTicketList = await Show.find({ _id : { $in : ticketId }})
-    // console.log("티켓 아이디와 일치하는 정보 리스트 : ", myTicketList)
-
-    const resTicketList = await myTicketList.map((ticket) => ({
-      name : ticket.name,
-      venue : ticket.venue,
-      dates : ticket.dates,
-      img : ticket.img,
-      id : ticket.id
-    }))
-    // console.log("마이페이지에 필요한 티켓 예매 내역 정보 리스트 : ", resTicketList)
+    console.log("마이페이지에 필요한 티켓 예매 내역 정보 리스트 : ", resTicketList)
 
     return res.status(200).json({
       ticketsuccess : true,
@@ -56,8 +43,8 @@ const getTicketsDetail = async (req, res) => {
   console.log("userId", userId)
 
   try {
-    const resesrvationList = await Reservation.find({ user : userId, showId : id }).populate('showId').lean();
-    console.log("로그인한 사용자의 예약 정보 리스트 : ", resesrvationList)
+    // const resesrvationList = await Reservation.find({ user : userId, showId : id }).populate('showId').lean();
+    // console.log("로그인한 사용자의 예약 정보 리스트 : ", resesrvationList)
 
     const seatList = await Seat.find({ userId : userId, showId: id }).populate('showId').lean();
     console.log("로그인한 사용자의 좌석 정보 리스트 : ", seatList);
@@ -90,6 +77,34 @@ const getTicketsDetail = async (req, res) => {
     
   }
 }
+
+// 티켓 취소
+const deleteTicket = async (req, res) => {
+    const { ticketId } = req.body;
+    const userId = req.user._id; 
+    try {
+      const foundTicket = await Seat.findOne({ userId : userId, showId : ticketId });
+      if (!foundTicket) {
+        return res.status(404).json({
+          deleteTicketSuccess: false,
+          message: "해당 티켓을 찾을 수 없습니다.",
+        });
+      }
+  
+      await Seat.deleteOne({ showId : ticketId });
+  
+      res.status(200).json({
+        deleteTicketSuccess: true,
+        message: "티켓 취소가 완료되었습니다",
+      });
+
+    } catch (error) {
+      res.status(500).json({
+        deleteTicketSuccess: false,
+        message: "티켓 취소 실패했습니다.",
+      });
+    }
+  }
 
 // 공간 예매 내역
 const getSpaces = async (req, res) => {
@@ -131,4 +146,4 @@ const getSpaces = async (req, res) => {
   }
 }
 
-export { getTickets, getTicketsDetail, getSpaces }
+export { getTickets, getTicketsDetail, getSpaces, deleteTicket }

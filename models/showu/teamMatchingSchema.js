@@ -15,7 +15,7 @@ const teamMatchingSchema = new Schema({
     deadLine : { type : String }, // 팀 공고 마감일
     careerHistory : { type : String }, //경력
     area : { type : String }, //팀 활동하는 지역
-    status: { type: String, enum: ['매칭 완료', '매칭 대기'], default: '매칭 대기' }, //팀 매칭 승인 상태
+    status: { type: String, enum: ['매칭 완료', '매칭 대기', '매칭 거절'], default: '매칭 대기' }, //팀 매칭 승인 상태
     recruit : { type : Number }, // 모집 인원
     likeCount: { type: Number, default: 0 },
     likedUsers: [{type: Schema.Types.ObjectId, ref : 'User'}],
