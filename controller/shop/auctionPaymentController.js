@@ -1,31 +1,41 @@
-import AuctionPayment from '../../models/shop/auctionPaymentSchema.js';
+import AuctionPayment from "../../models/shop/auctionPaymentSchema.js";
 
-const createAuctionPayment = async (req, res) => {
-  const { productName, finalPrice, quantity, image, name, address, message, totalAmount, deliveryFee, discount, paymentMethod } = req.body;
+const confirmAuctionPayment = async (req, res) => {
+  console.log("Confirm Payment Request Body:", req.body); // 요청 본문 로그 추가
+  console.log("Request Headers:", req.headers); // 요청 헤더 로그 추가
 
   try {
-    const newAuctionPayment = new AuctionPayment({
+    const {
       productName,
       finalPrice,
       quantity,
       image,
       name,
       address,
-      message,
       totalAmount,
       deliveryFee,
       discount,
-      paymentMethod,
-      status: '주문완료',
-      paymentAt: new Date().toISOString(),
+    } = req.body;
+
+    const newPayment = new AuctionPayment({
+      productName,
+      finalPrice,
+      quantity,
+      image,
+      name,
+      address,
+      totalAmount,
+      deliveryFee,
+      discount,
+      status: "success", // 결제 상태 설정
     });
 
-    await newAuctionPayment.save();
-    res.status(200).json({ message: '경매 결제 정보가 저장되었습니다.', payment: newAuctionPayment });
+    await newPayment.save();
+
+    res.status(200).json({ message: "결제 성공", paymentId: newPayment._id });
   } catch (error) {
-    console.error('경매 결제 오류:', error);
-    res.status(500).json({ message: '경매 결제 처리 중 오류가 발생했습니다.' });
+    res.status(500).json({ message: "결제 실패", error: error.message });
   }
 };
 
-export { createAuctionPayment };
+export { confirmAuctionPayment };
