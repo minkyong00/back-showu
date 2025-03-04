@@ -1,5 +1,5 @@
+import { isSameDay, startOfDay, endOfDay } from "date-fns";
 import Rental from "../../models/reservation/rentalSchema.js";
-import { parseISO, format, isSameDay, setHours, setMinutes } from "date-fns";
 
 // 예약 생성
 export const createReservation = async (req, res) => {
@@ -7,22 +7,44 @@ export const createReservation = async (req, res) => {
     console.log("Request Body:", req.body);
     const { userId, spaceId, name, location, rentalPeriod, img } = req.body;
 
-    // rentalPeriod를 날짜와 시간 슬롯으로 변환
-    const parsedRentalPeriod = rentalPeriod.map((period) => ({
-      date: new Date(period.date),
-      timeSlots: period.timeSlots,
-    }));
-
-    // 중복 예약 확인
-    const existingReservations = await Rental.find({
-      spaceId,
-      "rentalPeriod.date": { $in: parsedRentalPeriod.map((r) => r.date) },
+    // rentalPeriod 날짜 변환
+    const parsedRentalPeriod = rentalPeriod.map((period) => {
+      const date = startOfDay(new Date(period.date));
+      const timeSlots =
+        period.timeSlots.length === 0
+          ? Array.from({ length: 15 }, (_, i) => 8 + i) // 하루 전체 타임슬롯 (8시부터 22시까지)
+          : period.timeSlots;
+      return { date, timeSlots };
     });
 
-    if (existingReservations.length > 0) {
-      return res.status(400).json({
-        message: "이미 예약된 시간대입니다. 다른 시간대를 선택해주세요.",
+    // 중복 예약 확인
+    for (let i = 0; i < parsedRentalPeriod.length; i++) {
+      const period = parsedRentalPeriod[i];
+      const existingReservations = await Rental.find({
+        spaceId,
+        "rentalPeriod.date": period.date,
       });
+
+      const conflictingSlots = [];
+      existingReservations.forEach((rental) => {
+        rental.rentalPeriod.forEach((existingPeriod) => {
+          if (isSameDay(new Date(existingPeriod.date), new Date(period.date))) {
+            period.timeSlots.forEach((slot) => {
+              if (existingPeriod.timeSlots.includes(slot)) {
+                conflictingSlots.push(slot);
+              }
+            });
+          }
+        });
+      });
+
+      if (conflictingSlots.length > 0) {
+        return res.status(400).json({
+          message: `이미 예약된 시간대입니다. 다른 시간대를 선택해주세요. 겹치는 시간대: ${conflictingSlots.join(
+            ", "
+          )}`,
+        });
+      }
     }
 
     const newRental = new Rental({
@@ -35,7 +57,9 @@ export const createReservation = async (req, res) => {
     });
 
     await newRental.save();
-    res.status(201).json({ message: "Rental created successfully" });
+    res
+      .status(201)
+      .json({ message: "Rental created successfully", rental: newRental });
   } catch (error) {
     console.error("Failed to create rental:", error);
     res
@@ -48,19 +72,26 @@ export const createReservation = async (req, res) => {
 export const getReservedTimes = async (req, res) => {
   try {
     const { spaceId, date } = req.query;
-    const parsedDate = parseISO(date);
-    const formattedDate = format(parsedDate, "yyyy-MM-dd");
+    const startDate = startOfDay(new Date(date));
+    const endDate = endOfDay(new Date(date));
 
     const rentals = await Rental.find({
       spaceId,
-      "rentalPeriod.date": { $in: [new Date(formattedDate)] },
+      "rentalPeriod.date": { $gte: startDate, $lte: endDate },
     });
 
     const reservedTimes = rentals.flatMap((rental) =>
       rental.rentalPeriod
-        .filter((period) => isSameDay(period.date, parsedDate))
-        .flatMap((period) => period.timeSlots)
+        .filter((period) => isSameDay(new Date(period.date), startDate))
+        .flatMap((period) =>
+          period.timeSlots.map((slot) => {
+            const reservedTime = new Date(startDate);
+            reservedTime.setHours(slot, 0, 0, 0);
+            return reservedTime;
+          })
+        )
     );
+    console.log("서버에서 반환된 예약된 시간대:", reservedTimes); // 로그 출력 추가
     res.status(200).json(reservedTimes);
   } catch (error) {
     console.error("Failed to retrieve reserved times:", error);
@@ -75,24 +106,25 @@ export const getReservedTimes = async (req, res) => {
 export const getAvailableTimes = async (req, res) => {
   try {
     const { spaceId, date } = req.query;
-    const parsedDate = parseISO(date);
-    const formattedDate = format(parsedDate, "yyyy-MM-dd");
+    const startDate = startOfDay(new Date(date));
+    const endDate = endOfDay(new Date(date));
 
     const rentals = await Rental.find({
       spaceId,
-      "rentalPeriod.date": { $in: [new Date(formattedDate)] },
+      "rentalPeriod.date": { $gte: startDate, $lte: endDate },
     });
 
     const reservedTimes = rentals.flatMap((rental) =>
       rental.rentalPeriod
-        .filter((period) => isSameDay(period.date, parsedDate))
+        .filter((period) => isSameDay(new Date(period.date), startDate))
         .flatMap((period) => period.timeSlots)
     );
 
     // 1시간 단위로 예약 가능한 모든 시간대 생성
     const allTimes = [];
     for (let i = 8; i <= 22; i++) {
-      const time = setHours(setMinutes(new Date(parsedDate), 0), i);
+      const time = new Date(startDate);
+      time.setHours(i, 0, 0, 0);
       allTimes.push(time);
     }
 
@@ -100,7 +132,7 @@ export const getAvailableTimes = async (req, res) => {
     const availableTimes = allTimes.filter(
       (time) =>
         !reservedTimes.some(
-          (reservedTime) => new Date(reservedTime).getTime() === time.getTime()
+          (reservedTime) => reservedTime.getHours() === time.getHours()
         )
     );
 

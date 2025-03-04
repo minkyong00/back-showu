@@ -8,7 +8,7 @@ import {
 const rentalRouter = express.Router();
 
 rentalRouter.post("/reservations", createReservation);
-rentalRouter.get("/reservations/times", getReservedTimes);
-rentalRouter.get("/reservations/availableTimes", getAvailableTimes);
+rentalRouter.get("/reservedTimes", getReservedTimes);
+rentalRouter.get("/availableTimes", getAvailableTimes);
 
 export default rentalRouter;

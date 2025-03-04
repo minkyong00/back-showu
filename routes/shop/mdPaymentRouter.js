@@ -1,8 +1,8 @@
-import express from 'express';
-import { createMdPayment } from '../../controller/shop/mdPaymentController.js';
+import express from "express";
+import { confirmPayment } from "../../controller/shop/mdPaymentController.js";
 
 const mdPaymentRouter = express.Router();
 
-mdPaymentRouter.post('/', createMdPayment)
+mdPaymentRouter.post("/confirm-payment", confirmPayment);
 
 export default mdPaymentRouter;
