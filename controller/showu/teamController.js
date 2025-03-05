@@ -120,7 +120,7 @@ const teamCreate = async (req, res) => {
 
     res.status(200).json({
         teamCreateSuccess : true,
-        message : "팀 개설이 완료되었습니다.",
+        message : "팀 개설 신청이 완료되었습니다. 관리자의 승인 후 개설이 완료됩니다.",
         createTeamList : createTeam,
         filePath : filePaths.file,
         profileFilePath : filePaths.teamProfile
