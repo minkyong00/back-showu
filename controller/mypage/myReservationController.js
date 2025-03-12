@@ -1,13 +1,14 @@
 import Reservation from "../../models/reservation/reservationSchema.js";
 import Seat from "../../models/reservation/seatSchema.js";
 import Space from "../../models/reservation/spaceSchema.js";
+import TicketPayment from "../../models/reservation/ticketPaymentSchema.js";
 
 const getTickets = async (req, res) => {
   const userId = req.user._id;
   // console.log("로그인한 사용자 id : ", userId)
 
   try {
-    const seatList = await Seat.find({ userId : userId }).populate('showId').lean();
+    const seatList = await TicketPayment.find({ userId : userId }).populate('showId').lean();
     // console.log("로그인한 사용자의 좌석 정보 리스트 : ", seatList);
 
     const resTicketList = await seatList.map((ticket) => ({
@@ -46,7 +47,7 @@ const getTicketsDetail = async (req, res) => {
     // const resesrvationList = await Reservation.find({ user : userId, showId : id }).populate('showId').lean();
     // console.log("로그인한 사용자의 예약 정보 리스트 : ", resesrvationList)
 
-    const seatList = await Seat.find({ userId : userId, showId: id }).populate('showId').lean();
+    const seatList = await TicketPayment.find({ userId : userId, showId: id }).populate('showId').lean();
     console.log("로그인한 사용자의 좌석 정보 리스트 : ", seatList);
 
     const resTicketList = await seatList.map((ticket) => ({
@@ -55,7 +56,7 @@ const getTicketsDetail = async (req, res) => {
       dates : ticket.showId.dates,
       img : ticket.showId.img,
       id : ticket.showId._id,
-      price : ticket.showId.price,
+      amount : ticket.amount,
       createdAt : ticket.showId.createdAt,
       seatNumbers : ticket.seatNumbers
     }))
@@ -83,7 +84,7 @@ const deleteTicket = async (req, res) => {
     const { ticketId } = req.body;
     const userId = req.user._id; 
     try {
-      const foundTicket = await Seat.findOne({ userId : userId, showId : ticketId });
+      const foundTicket = await TicketPayment.findOne({ userId : userId, showId : ticketId });
       if (!foundTicket) {
         return res.status(404).json({
           deleteTicketSuccess: false,
@@ -91,7 +92,7 @@ const deleteTicket = async (req, res) => {
         });
       }
   
-      await Seat.deleteOne({ showId : ticketId });
+      await TicketPayment.deleteOne({ showId : ticketId });
   
       res.status(200).json({
         deleteTicketSuccess: true,
