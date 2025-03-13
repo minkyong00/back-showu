@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import { getCurrentTime } from "../../utils/utils.js";
 
 const mdTossSchema = new mongoose.Schema({
-  productId: { type: mongoose.Types.ObjectId, ref: "Product", required: true }, // 제품 ID (참조)
+  productId: { type: mongoose.Types.ObjectId, ref: "Md", required: true }, // 제품 ID (참조)
   quantity: { type: Number, required: true }, // 수량
   userId: { type: mongoose.Types.ObjectId, ref: "User"}, // 결제한 사용자 ID
   orderId: { type: String, required: true }, // 주문 ID
