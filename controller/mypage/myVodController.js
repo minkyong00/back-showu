@@ -49,7 +49,7 @@ const getMyVod = async (req, res) => {
     const myVodList = await vodList.map((vod) => ({
       title : vod.title,
       category : vod.category,
-      themnail : vod.themnail
+      themnail : vod.thumbnail
     }))
 
     console.log("마이페이지에 필요한 나의 vod 정보 : ", myVodList)

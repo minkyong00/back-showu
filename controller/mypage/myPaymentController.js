@@ -1,34 +1,39 @@
 import AuctionPayment from "../../models/shop/auctionPaymentSchema.js";
+import AuctionTossPayment from "../../models/shop/auctionTossPaymentSchema.js";
 import MdPayment from "../../models/shop/mdPaymentSchema.js";
+import MdTossPayment from "../../models/shop/mdTossPaymentSchema.js";
 
 const getPaymentList = async (req, res) => {
   const userId = req.user._id;
+  // console.log("user", req.user.name)
+  const userName = req.user.name;
+
   try {
-    const foundMdPayment = await MdPayment.find({ name : userId })
-      .populate("name")
-      .populate("productName")
+    const foundMdPayment = await MdTossPayment.find({ userName : userName })
+      .populate("productId")
       .lean();
 
-    const foundAuctionPayment = await AuctionPayment.find({ name : userId })
-      .populate("name")
-      .populate("productName")
+    const foundAuctionPayment = await AuctionTossPayment.find({ userName : userName })
+      .populate("productId")
       .lean();
 
-    // console.log("foundMdPayment", foundMdPayment)
-    // console.log("foundAuctionPayment", foundAuctionPayment)
+    console.log("foundMdPayment", foundMdPayment)
+    console.log("foundAuctionPayment", foundAuctionPayment)
 
     const allPaymentList = [
       ...foundMdPayment.map((payment) => ({
         type : "MD",
-        productName: payment.productName.mdName,
+        // productName: payment.orderName,
         ...payment
       })),
       ...foundAuctionPayment.map((payment) => ({
         type : "Auction",
-        productName: payment.productName.auctionName,
+        // productName: payment.orderName,
         ...payment
       }))
     ]
+
+    allPaymentList.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
 
     console.log("allPaymentList", allPaymentList)
 

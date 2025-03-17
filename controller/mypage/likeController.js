@@ -124,22 +124,22 @@ const likeTeam = async (req, res) => {
   const userId = req.user._id;
 
   try {
-    const likeList = await TeamMatching.find({ likeUser : userId })
+    const likeList = await TeamMatching.find({ likedUsers : userId })
     console.log("유저가 좋아요한 팀 매칭 리스트 : ", likeList)
 
-    const myLikeTeam = await likeList.map((team) => ({
-      teamName : team.teamName,
-      category : team.category,
-      teamNotice : team.teamNotice,
-      teamThumbnail : team.teamThumbnail
-    }))
+    // const myLikeTeam = await likeList.map((team) => ({
+    //   teamName : team.teamName,
+    //   category : team.category,
+    //   teamTitle : team.teamTitle,
+    //   teamThumbnail : team.teamThumbnail
+    // }))
 
-    console.log("마이페이지에 필요한 좋아요 팀 매칭 정보 : ", myLikeTeam)
+    // console.log("마이페이지에 필요한 좋아요 팀 매칭 정보 : ", myLikeTeam)
 
     return res.status(200).json({
       likeTeamSuccess : true,
       message : "찜한 팀 목록을 성공적으로 가져왔습니다",
-      myLikeTeam : myLikeTeam
+      myLikeTeam : likeList
     })
   } catch (error) {
     return res.status(500).json({
